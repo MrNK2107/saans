@@ -31,7 +31,7 @@ export function ollamaEngine({
         body: JSON.stringify({ model, stream: false, think: false, ...body }),
         signal: AbortSignal.timeout(timeoutMs),
       });
-    } catch (error) {
+    } catch {
       throw new AiUnavailable("The local AI model isn't reachable. Is Ollama running?");
     }
     if (!res.ok) throw new AiUnavailable("The local AI model returned an error.");

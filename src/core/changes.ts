@@ -62,7 +62,7 @@ const WORDS: Record<string, Record<Lang, string>> = {
   biomass: { en: "wood or cow-dung fuel", hi: "लकड़ी या उपले" },
 };
 
-const word = (key: string, lang: Lang) => WORDS[key]?.[lang] ?? key;
+export const word = (key: string, lang: Lang) => WORDS[key]?.[lang] ?? key;
 
 /** One plain sentence saying what the change does, shown before the person approves it. */
 export function describeChange(change: Change, lang: Lang): string {

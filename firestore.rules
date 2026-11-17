@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// households/{uid} = { ownerId, data: Profile, updatedAt }
+// Only the signed-in owner can read or write their own household. Everything else is closed.
+// The app also validates `data` with zod before use.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function validHousehold(doc, uid) {
+      return doc.keys().hasOnly(['ownerId', 'data', 'updatedAt'])
+        && doc.keys().hasAll(['ownerId', 'data', 'updatedAt'])
+        && doc.ownerId == uid
+        && doc.updatedAt is string && doc.updatedAt.size() <= 40
+        && doc.data is map
+        && doc.data.audience in ['family', 'community']
+        && doc.data.language in ['en', 'hi']
+        && doc.data.locality is string && doc.data.locality.size() > 0 && doc.data.locality.size() <= 40
+        && doc.data.members is map
+        && doc.data.members.adults is int && doc.data.members.adults >= 0 && doc.data.members.adults <= 12
+        && doc.data.conditions is list && doc.data.conditions.size() <= 5
+        && doc.data.households is int && doc.data.households >= 1 && doc.data.households <= 5000;
+    }
+
+    match /households/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && validHousehold(request.resource.data, uid);
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
