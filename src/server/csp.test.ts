@@ -11,6 +11,14 @@ describe("buildPolicy", () => {
     expect(prod).not.toContain("unsafe-eval");
   });
 
+  it("lets Firebase sign-in reach its Google endpoints and nothing broader", () => {
+    const connect = prod.split("; ").find((d) => d.startsWith("connect-src")) ?? "";
+    expect(connect).toContain("https://apis.google.com");
+    expect(connect).toContain("https://*.googleapis.com");
+    expect(connect).not.toContain("*.google.com");
+    expect(connect).not.toMatch(/ \*( |$)/);
+  });
+
   it("blocks framing and plugins", () => {
     expect(prod).toContain("frame-ancestors 'none'");
     expect(prod).toContain("object-src 'none'");

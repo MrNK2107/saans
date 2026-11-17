@@ -49,3 +49,17 @@ test("the API rejects non-JSON, oversized and invalid requests", async ({ reques
 test("health check reveals nothing about configuration", async ({ request }) => {
   expect(await (await request.get("/api/health")).json()).toEqual({ ok: true });
 });
+
+test("Firebase is not downloaded or contacted until someone signs in", async ({ page }) => {
+  const contacted: string[] = [];
+  page.on("request", (req) => {
+    if (/firebase|identitytoolkit|apis\.google\.com|securetoken/i.test(req.url())) {
+      contacted.push(req.url());
+    }
+  });
+  await page.goto("/");
+  await page.goto("/plan");
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("heading", { level: 2, name: /Air in/ })).toBeVisible();
+  expect(contacted).toEqual([]);
+});

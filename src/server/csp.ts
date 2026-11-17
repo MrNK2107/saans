@@ -17,7 +17,8 @@ export function buildPolicy(nonce: string, { dev, authDomain }: PolicyOptions): 
     `style-src 'self' ${dev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
     "img-src 'self' data: blob: https://lh3.googleusercontent.com",
     "font-src 'self'",
-    "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com",
+    // apis.google.com is the Google sign-in loader Firebase Auth uses; it pings it while loading.
+    "connect-src 'self' https://*.googleapis.com https://apis.google.com https://*.firebaseio.com wss://*.firebaseio.com",
     `frame-src https://accounts.google.com${auth}`,
     "object-src 'none'",
     "base-uri 'self'",
