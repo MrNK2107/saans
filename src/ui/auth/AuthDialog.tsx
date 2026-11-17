@@ -42,7 +42,9 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
 
   const fail = (error: unknown) => {
     const key = authErrorKey(codeOf(error));
-    setNote(key ? { kind: "error", key } : null);
+    // Name the address Firebase refused, so the fix (adding it to the allowed list) is obvious.
+    const params = key === "auth.err.domain" ? { host: window.location.hostname } : undefined;
+    setNote(key ? { kind: "error", key, params } : null);
   };
 
   /** Runs one sign-in step, closing the dialog on success and explaining any failure. */

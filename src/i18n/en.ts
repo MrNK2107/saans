@@ -153,7 +153,8 @@ export const en = {
   "auth.err.email": "Enter a valid email address.",
   "auth.err.popup":
     "Your browser blocked the sign-in window. Allow pop-ups for this site and try again.",
-  "auth.err.domain": "Sign-in isn't set up for this web address yet.",
+  "auth.err.domain":
+    "Sign-in isn't set up for {host} yet. Use the main Saans address, or ask the site owner to add this one.",
   "auth.err.network": "We couldn't reach the sign-in service. Check your connection and try again.",
   "auth.err.many": "Too many attempts. Please wait a moment and try again.",
   "auth.err.disabled": "This way of signing in isn't turned on.",

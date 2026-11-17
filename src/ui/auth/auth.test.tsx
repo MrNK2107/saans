@@ -66,7 +66,7 @@ describe("AuthDialog", () => {
     render(<AuthDialog onClose={onClose} />);
     await userEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Sign-in isn't set up for this web address yet.",
+      "Sign-in isn't set up for localhost yet.",
     );
     expect(onClose).not.toHaveBeenCalled();
   });
