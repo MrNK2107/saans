@@ -29,7 +29,12 @@ if (keys.length === 0) {
 const kept = existsSync(target)
   ? readFileSync(target, "utf8")
       .split(/\r?\n/)
-      .filter((line) => line && !line.startsWith("GEMINI_API_KEYS=") && !line.startsWith("AI_PROVIDER="))
+      .filter(
+        (line) => line && !line.startsWith("GEMINI_API_KEYS=") && !line.startsWith("AI_PROVIDER="),
+      )
   : [];
-writeFileSync(target, [...kept, "AI_PROVIDER=gemini", `GEMINI_API_KEYS=${keys.join(",")}`, ""].join("\n"));
+writeFileSync(
+  target,
+  [...kept, "AI_PROVIDER=gemini", `GEMINI_API_KEYS=${keys.join(",")}`, ""].join("\n"),
+);
 console.log(`Wrote ${keys.length} Gemini key(s) to .env.local`);

@@ -63,6 +63,13 @@ describe("air data", () => {
     expect(day.source).toBe("sample");
   });
 
+  it("can be forced to the typical day for offline use", async () => {
+    vi.stubEnv("AIR_SOURCE", "sample");
+    const never = vi.fn();
+    expect((await dayFor("saket", "2026-11-23", never)).source).toBe("sample");
+    expect(never).not.toHaveBeenCalled();
+  });
+
   it("reads today's date in Delhi, not the server's zone", () => {
     expect(todayInDelhi(new Date("2026-11-17T20:00:00Z"))).toBe("2026-11-18");
   });

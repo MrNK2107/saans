@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Profile } from "@/core/types";
+import { DEFAULT_PROFILE, type Profile } from "@/core/types";
 import { saveProfile, useProfile } from "@/store/local";
 import { fetchNarrative, fetchPlan, type NarrateResponse, type PlanResponse } from "../api";
 import { useT } from "../useT";
@@ -52,6 +52,10 @@ export function PlanApp() {
   );
 
   const submit = (next: Profile) => saveProfile(next);
+  // Until the household is edited, the plan is for the built-in example family, and says so.
+  const isExample =
+    JSON.stringify({ ...profile, language: "en" }) ===
+    JSON.stringify({ ...DEFAULT_PROFILE, language: "en" });
   const planResult = plan.current;
   const narrative = words.current && "data" in words.current ? words.current.data : null;
 
@@ -77,6 +81,7 @@ export function PlanApp() {
 
         {planResult && "data" in planResult && (
           <>
+            {isExample && <p className="notice">{t("plan.example")}</p>}
             {planResult.data.notice && <p className="notice">{planResult.data.notice}</p>}
             <AirNow plan={planResult.data.plan} />
             <Outcome plan={planResult.data.plan} />

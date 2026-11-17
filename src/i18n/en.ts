@@ -3,7 +3,7 @@ export const en = {
   "app.tagline": "Breathe easier through Delhi's winter smog",
   skip: "Skip to main content",
   "lang.switch": "हिन्दी",
-  "lang.label": "Switch language to Hindi",
+  "lang.label": "हिन्दी, switch language to Hindi",
 
   "home.title": "A smog plan made for your home, not for an average Delhi.",
   "home.lede":
@@ -101,6 +101,7 @@ export const en = {
     "Modelled estimate from your home's size, ventilation and routine. See the assumptions in the README.",
 
   "plan.title": "Do this today",
+  "plan.example": "This is an example household. Update the form to make it yours.",
   "plan.writing": "Writing your personal summary…",
   "plan.ai": "Written by {model}",
   "plan.noai":

@@ -180,15 +180,37 @@ describe("buildPlan", () => {
     plan.outcomes.forEach((o) => expect(o.after.dose).toBeLessThan(o.before.dose));
   });
 
-  it("tells a household to keep windows shut only when airing really costs them", () => {
-    const calm = buildPlan(profile({ commute: { mode: "wfh", km: 0, daysPerWeek: 0 } }), day(30));
-    const windows = (p: typeof calm) => p.actions.find((a) => a.id === "windows");
-    const smoggy = buildPlan(
-      profile({ commute: { mode: "wfh", km: 0, daysPerWeek: 0 } }),
-      day(450),
+  it("says when to air the house: at the one clean hour, or never when every hour is bad", () => {
+    const home = profile({ commute: { mode: "wfh", km: 0, daysPerWeek: 0 } });
+    const shaped = (pm: (h: number) => number) => {
+      const pm25 = Array.from({ length: 24 }, (_, h) => pm(h));
+      return { ...day(100), pm25, pm10: pm25.map((v) => v * 1.8) };
+    };
+    const windows = (p: ReturnType<typeof buildPlan>) => p.actions.find((a) => a.id === "windows");
+
+    // Dirty at the usual airing hours, clean at midday: air once, then.
+    const midday = windows(
+      buildPlan(
+        home,
+        shaped((h) => (h >= 12 && h <= 14 ? 15 : 300)),
+      ),
     );
-    if (windows(smoggy)) expect(windows(smoggy)?.params.when).toBe("closed");
-    expect(windows(calm)).toBeUndefined();
+    expect(midday).toBeDefined();
+    expect(Number(midday?.params.when)).toBeGreaterThanOrEqual(12);
+    expect(Number(midday?.params.when)).toBeLessThanOrEqual(14);
+    expect(midday?.impactPct).toBeGreaterThanOrEqual(3);
+
+    // Dirty all day: never advise opening a window (any advice given is to keep them shut).
+    const allDay = windows(
+      buildPlan(
+        home,
+        shaped(() => 300),
+      ),
+    );
+    expect(allDay?.params.when ?? "closed").toBe("closed");
+
+    // A clean day needs no windows advice at all.
+    expect(windows(buildPlan(home, day(30)))).toBeUndefined();
   });
 
   it("never recommends cycling to a commuter during a severe spell", () => {

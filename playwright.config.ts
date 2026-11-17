@@ -18,6 +18,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     timeout: 240_000,
     reuseExistingServer: !process.env.CI,
-    env: { AI_PROVIDER: "mock", RATE_LIMIT_SCALE: "50" },
+    env: { AI_PROVIDER: "mock", AIR_SOURCE: "sample", RATE_LIMIT_SCALE: "50" },
   },
 });

@@ -68,7 +68,11 @@ export async function liveDay(
   }
 }
 
-/** Live data when available; otherwise a clearly labelled typical winter day. */
+/**
+ * Live data when available; otherwise a clearly labelled typical winter day. AIR_SOURCE=sample forces
+ * the typical day, which keeps offline demos and the end-to-end suite deterministic.
+ */
 export async function dayFor(localityId: string, date: string, fetcher?: Fetcher): Promise<Day> {
+  if (process.env.AIR_SOURCE === "sample") return sampleDay(date);
   return (await liveDay(localityId, date, fetcher)) ?? sampleDay(date);
 }
