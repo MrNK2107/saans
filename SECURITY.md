@@ -24,7 +24,9 @@ Please open a private security advisory on this repository rather than a public 
 
 ## Privacy
 
-- The household profile stays on the device unless the person signs in with Google, which is optional.
+- The household profile stays on the device unless the person signs in (with Google or an email and
+  password), which is optional. Passwords are handled entirely by Firebase Authentication and never reach
+  this server or its logs.
 - If they do, the profile is stored in Firestore under their own user id and nowhere else.
 - The server logs nothing about a household. Only a neighbourhood centre point (never an address) is sent
   to the air data service.

@@ -49,7 +49,8 @@ The decisions come from user context, not a template. Examples from the test sui
 ## How it works
 
 1. **Tell it about your home** (area, who lives there, health conditions, commute, kitchen, purifier). It
-   stays on your device unless you sign in with Google.
+   stays on your device unless you choose to sign in, with Google or an email and password, to keep it
+   across devices.
 2. **`/api/plan`** fetches the hourly air model for your neighbourhood, builds the plan and returns it in well
    under a second. If live data is unreachable it uses a clearly labelled typical winter day.
 3. **The page shows** the air now (an accessible chart with a table behind it), **what your choices change**

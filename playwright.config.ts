@@ -18,6 +18,15 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     timeout: 240_000,
     reuseExistingServer: !process.env.CI,
-    env: { AI_PROVIDER: "mock", AIR_SOURCE: "sample", RATE_LIMIT_SCALE: "50" },
+    env: {
+      AI_PROVIDER: "mock",
+      AIR_SOURCE: "sample",
+      RATE_LIMIT_SCALE: "50",
+      // A made-up Firebase project so the sign-in dialog is present, without touching a real one.
+      NEXT_PUBLIC_FIREBASE_API_KEY: "e2e-placeholder",
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "demo-saans.firebaseapp.com",
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: "demo-saans",
+      NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:e2e",
+    },
   },
 });

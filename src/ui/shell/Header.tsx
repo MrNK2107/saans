@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { saveProfile, useProfile } from "@/store/local";
 import { useT } from "../useT";
 import { AuthButton } from "./AuthButton";
+import { Logo } from "./Logo";
 
 /** Keeps <html lang> in step with the chosen language, so screen readers pronounce Hindi correctly. */
 function LangSync() {
@@ -23,7 +24,7 @@ export function Header() {
     <header className="site-header">
       <LangSync />
       <Link href="/" className="brand">
-        <span aria-hidden="true" className="brand-mark" />
+        <Logo />
         <span className="brand-name">{t("app.name")}</span>
       </Link>
       <nav className="header-actions" aria-label="Site">
