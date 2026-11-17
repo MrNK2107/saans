@@ -34,10 +34,10 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     const el = dialog.current;
-    el?.showModal();
-    return () => {
-      if (el?.open) el.close();
-    };
+    // Guarded because React's dev double-mount runs this twice; showModal() on an open dialog throws.
+    if (el && !el.open) el.showModal();
+    // No close() on cleanup: it would fire onClose and unmount the dialog straight after it opened
+    // in dev. Unmounting removes the element, which dismisses a modal dialog on its own.
   }, []);
 
   const fail = (error: unknown) => {

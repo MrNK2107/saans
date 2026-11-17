@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { StrictMode } from "react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthFailure } from "@/store/auth";
@@ -38,6 +39,18 @@ describe("authErrorKey", () => {
 
 describe("AuthDialog", () => {
   const open = () => render(<AuthDialog onClose={vi.fn()} />);
+
+  it("stays open under React's dev double-mount instead of closing itself", async () => {
+    const onClose = vi.fn();
+    render(
+      <StrictMode>
+        <AuthDialog onClose={onClose} />
+      </StrictMode>,
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Sign in to keep your household" })).toBeVisible();
+  });
 
   it("offers Google first, then email and password", () => {
     open();
