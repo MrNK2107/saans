@@ -1,43 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { buildBands } from "@/core/bands";
+import { describeAction } from "@/core/catalog";
 import { DEFAULT_PROFILE, type Profile } from "@/core/types";
-import { saveProfile, useProfile } from "@/store/local";
+import { saveProfile, useHasSavedProfile, useProfile } from "@/store/local";
 import { fetchNarrative, fetchPlan, type NarrateResponse, type PlanResponse } from "../api";
+import { useNowHour } from "../useNowHour";
+import { useRequest } from "../useRequest";
 import { useT } from "../useT";
 import { ActionList } from "./ActionList";
 import { AirNow } from "./AirNow";
 import { Assistant } from "./Assistant";
+import { BandGrid } from "./BandGrid";
+import { Drawer } from "./Drawer";
 import { Outcome } from "./Outcome";
 import { ProfileForm } from "./ProfileForm";
-
-type Result<T> = { key: string; data: T } | { key: string; error: string };
-
-/** Runs `load` whenever `key` changes, keeping the latest answer tagged with the key it answers. */
-function useRequest<T>(key: string, load: (signal: AbortSignal) => Promise<T>, fallback: string) {
-  const [result, setResult] = useState<Result<T> | null>(null);
-  const [attempt, setAttempt] = useState(0);
-  const tagged = `${key}#${attempt}`;
-
-  useEffect(() => {
-    const controller = new AbortController();
-    load(controller.signal)
-      .then((data) => setResult({ key: tagged, data }))
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) return;
-        setResult({ key: tagged, error: error instanceof Error ? error.message : fallback });
-      });
-    return () => controller.abort();
-    // `load` and `fallback` are rebuilt every render; the request should rerun only when the key changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tagged]);
-
-  return { current: result?.key === tagged ? result : null, retry: () => setAttempt((n) => n + 1) };
-}
+import { QuickSetup } from "./QuickSetup";
+import { RightNow } from "./RightNow";
+import { TabBar } from "./TabBar";
+import { TodayHead } from "./TodayHead";
 
 export function PlanApp() {
   const { t, lang } = useT();
   const [profile] = useProfile();
+  const hasSaved = useHasSavedProfile();
+  const nowHour = useNowHour();
+  const [drawer, setDrawer] = useState(false);
 
   // The numbers don't depend on the display language; the AI's wording does.
   const plan = useRequest<PlanResponse>(
@@ -52,26 +41,29 @@ export function PlanApp() {
   );
 
   const submit = (next: Profile) => saveProfile(next);
+  const update = (next: Profile) => {
+    saveProfile(next);
+    setDrawer(false);
+  };
   // Until the household is edited, the plan is for the built-in example family, and says so.
   const isExample =
     JSON.stringify({ ...profile, language: "en" }) ===
     JSON.stringify({ ...DEFAULT_PROFILE, language: "en" });
   const planResult = plan.current;
   const narrative = words.current && "data" in words.current ? words.current.data : null;
+  const data = planResult && "data" in planResult ? planResult.data : null;
+  const bands = data ? buildBands(data.plan) : [];
+  const first = data?.plan.actions[0];
 
   return (
-    <div className="plan-layout" lang={lang}>
-      <aside aria-label={t("form.title")}>
-        <ProfileForm key={JSON.stringify(profile)} profile={profile} onSubmit={submit} />
-      </aside>
-
-      <div className="plan-main">
+    <div className="today" lang={lang}>
+      <div className="today-main" id="today">
         <div aria-live="polite" aria-busy={!planResult}>
           {!planResult && <p className="status">{t("state.loading")}</p>}
         </div>
 
         {planResult && "error" in planResult && (
-          <div className="card" role="alert">
+          <div className="alert" role="alert">
             <p>{planResult.error || t("state.error")}</p>
             <button type="button" className="btn btn-secondary" onClick={plan.retry}>
               {t("state.retry")}
@@ -79,22 +71,51 @@ export function PlanApp() {
           </div>
         )}
 
-        {planResult && "data" in planResult && (
+        {data && (
           <>
-            {isExample && <p className="notice">{t("plan.example")}</p>}
-            {planResult.data.notice && <p className="notice">{planResult.data.notice}</p>}
-            <AirNow plan={planResult.data.plan} />
-            <Outcome plan={planResult.data.plan} />
+            <TodayHead plan={data.plan} />
+            {isExample && hasSaved && <p className="notice">{t("plan.example")}</p>}
+            {data.notice && <p className="notice">{data.notice}</p>}
+            <BandGrid bands={bands} nowHour={nowHour} />
+            <RightNow
+              bands={bands}
+              nowHour={nowHour}
+              firstAction={first ? describeAction(first, lang).title : null}
+            />
+            {!hasSaved && (
+              <QuickSetup
+                profile={profile}
+                onDone={(next) => saveProfile(next)}
+                onSkip={() => saveProfile(profile)}
+              />
+            )}
+            <Outcome plan={data.plan} />
             <ActionList
-              actions={planResult.data.plan.actions}
+              actions={data.plan.actions}
               narrative={narrative?.narrative ?? null}
               model={narrative?.ai ?? null}
               pending={!words.current}
             />
-            <Assistant profile={profile} onChange={submit} />
+            <AirNow plan={data.plan} />
+            <p className="edit-row">
+              <button type="button" className="btn btn-secondary" onClick={() => setDrawer(true)}>
+                {t("today.edit")}
+              </button>
+            </p>
           </>
         )}
       </div>
+
+      {data && (
+        <div className="today-side">
+          <Assistant profile={profile} onChange={submit} />
+        </div>
+      )}
+
+      <Drawer open={drawer} onClose={() => setDrawer(false)} title={t("form.title")}>
+        <ProfileForm key={JSON.stringify(profile)} profile={profile} onSubmit={update} />
+      </Drawer>
+      <TabBar onHome={() => setDrawer(true)} />
     </div>
   );
 }

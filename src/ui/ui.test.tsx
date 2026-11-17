@@ -34,14 +34,19 @@ beforeEach(() => {
 });
 
 describe("Home", () => {
-  it("explains the product and links to the plan", () => {
+  it("explains the product and links to the plan", async () => {
+    vi.spyOn(api, "fetchPlan").mockResolvedValue({ plan });
     render(<Home />);
+    expect(await screen.findByRole("heading", { name: /AQI [0-9]+/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Build my plan" })).toHaveAttribute("href", "/plan");
-    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    const steps = screen.getByRole("heading", { name: "How it works" }).parentElement;
+    expect(within(steps as HTMLElement).getAllByRole("listitem")).toHaveLength(3);
+    expect(screen.getByRole("heading", { name: "Your day in eight bands" })).toBeInTheDocument();
   });
 
   it("follows the saved language", () => {
+    vi.spyOn(api, "fetchPlan").mockResolvedValue({ plan });
     saveProfile({ ...DEFAULT_PROFILE, language: "hi" });
     render(<Home />);
     expect(screen.getByRole("link", { name: "मेरा प्लान बनाएँ" })).toBeInTheDocument();
@@ -269,9 +274,52 @@ describe("PlanApp", () => {
     vi.spyOn(api, "fetchNarrative").mockResolvedValue({ ai: null, narrative: null });
     render(<PlanApp />);
     expect(await screen.findByText("Typical day")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Edit your household" }));
     await userEvent.selectOptions(screen.getByLabelText("Area"), "saket");
     await userEvent.click(screen.getByRole("button", { name: "Update my plan" }));
     await waitFor(() => expect(loadProfile().locality).toBe("saket"));
     await waitFor(() => expect(fetchPlan.mock.calls.length).toBeGreaterThan(1));
+  });
+  it("shows the day as eight bands, a right-now strip and the proof", async () => {
+    vi.spyOn(api, "fetchPlan").mockResolvedValue({ plan });
+    vi.spyOn(api, "fetchNarrative").mockResolvedValue({ ai: null, narrative: null });
+    render(<PlanApp />);
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(/AQI [0-9]+/);
+    const bands = screen.getByRole("heading", { name: "Your day in eight bands" }).parentElement;
+    expect(within(bands as HTMLElement).getAllByRole("listitem")).toHaveLength(8);
+    expect(screen.getByRole("heading", { name: "Right now" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What your choices change" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Sections" })).toBeInTheDocument();
+  });
+
+  it("walks a first-time visitor through three quick questions", async () => {
+    vi.spyOn(api, "fetchPlan").mockResolvedValue({ plan });
+    vi.spyOn(api, "fetchNarrative").mockResolvedValue({ ai: null, narrative: null });
+    render(<PlanApp />);
+    await screen.findByRole("heading", { name: "Set up in three steps" });
+    await userEvent.selectOptions(screen.getByLabelText("Where do you live?"), "saket");
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByLabelText("Adults only"));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByLabelText("Metro or bus"));
+    await userEvent.click(screen.getByRole("button", { name: "Make my plan" }));
+    const saved = loadProfile();
+    expect(saved.locality).toBe("saket");
+    expect(saved.members).toEqual({ infants: 0, children: 0, adults: 2, seniors: 0 });
+    expect(saved.commute.mode).toBe("metro");
+    await waitFor(() =>
+      expect(screen.queryByRole("heading", { name: "Set up in three steps" })).toBeNull(),
+    );
+  });
+
+  it("lets a visitor skip the setup and keep the example", async () => {
+    vi.spyOn(api, "fetchPlan").mockResolvedValue({ plan });
+    vi.spyOn(api, "fetchNarrative").mockResolvedValue({ ai: null, narrative: null });
+    render(<PlanApp />);
+    await userEvent.click(await screen.findByRole("button", { name: "Skip and use the example" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("heading", { name: "Set up in three steps" })).toBeNull(),
+    );
+    expect(await screen.findByText(/example household/)).toBeInTheDocument();
   });
 });

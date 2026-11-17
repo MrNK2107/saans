@@ -1,4 +1,4 @@
-/** The Saans mark: a breath, drawn as two soft waves over a teal tile. Decorative beside the name. */
+/** The Saans mark: a breath, drawn as two soft waves over a vermilion tile. Decorative beside the name. */
 export function Logo({ size = 32 }: { size?: number }) {
   return (
     <svg
@@ -9,18 +9,18 @@ export function Logo({ size = 32 }: { size?: number }) {
       focusable="false"
       className="logo"
     >
-      <rect width="64" height="64" rx="15" fill="#0a5c63" />
+      <rect width="64" height="64" rx="15" fill="#b3411a" />
       <path
         d="M13 25c6-9 13-9 19 0s13 9 19 0"
         fill="none"
-        stroke="#9bd3cf"
+        stroke="#f7ecd6"
         strokeWidth="5"
         strokeLinecap="round"
       />
       <path
         d="M13 40c6-9 13-9 19 0s13 9 19 0"
         fill="none"
-        stroke="#f5f2ec"
+        stroke="#f7ecd6"
         strokeWidth="5"
         strokeLinecap="round"
       />

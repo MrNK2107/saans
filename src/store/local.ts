@@ -77,6 +77,15 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
+/** Whether this device has a saved household. Reads as true on the server so first-run UI never flashes. */
+export function useHasSavedProfile(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => hasSavedProfile(),
+    () => true,
+  );
+}
+
 /** The household profile, remembered on this device. */
 export function useProfile(): [Profile, (next: Profile) => void] {
   const profile = useSyncExternalStore(subscribe, snapshot, () => DEFAULT_PROFILE);

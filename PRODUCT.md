@@ -2,7 +2,9 @@
 
 ## Platform
 
-Web (mobile first). English and Hindi.
+web
+
+Mobile first. English and Hindi.
 
 ## Vertical
 

@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Breathe easier through Delhi's winter smog.",
     start_url: "/plan",
     display: "standalone",
-    background_color: "#f5f2ec",
-    theme_color: "#0a5c63",
+    background_color: "#f7ecd6",
+    theme_color: "#b3411a",
   };
 }

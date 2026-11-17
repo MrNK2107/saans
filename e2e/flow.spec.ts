@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openPlan } from "./helpers";
+import { closeHousehold, openHousehold, openPlan } from "./helpers";
 
 test("a family goes from the landing page to a plan with measured impact", async ({ page }) => {
   await page.goto("/");
@@ -18,12 +18,14 @@ test("a family goes from the landing page to a plan with measured impact", async
 
 test("changing the household recomputes the plan and is remembered", async ({ page }) => {
   await openPlan(page);
+  await openHousehold(page);
   await page.getByLabel("Area").selectOption("dwarka");
   await page.getByLabel("Usual way of travelling").selectOption("metro");
   await page.getByRole("button", { name: "Update my plan" }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Air in Dwarka today" })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { level: 2, name: "Air in Dwarka today" })).toBeVisible();
+  await openHousehold(page);
   await expect(page.getByLabel("Usual way of travelling")).toHaveValue("metro");
 });
 
@@ -31,12 +33,17 @@ test("the assistant proposes a change and nothing happens until it is approved",
   page,
 }) => {
   await openPlan(page);
+  await openHousehold(page);
   await expect(page.getByLabel("Air purifier")).toHaveValue("none");
+  await closeHousehold(page);
   await page.getByLabel("Your question").fill("Should I buy a purifier?");
   await page.getByRole("button", { name: "Ask" }).click();
   await expect(page.getByText(/Suggested change/)).toBeVisible();
+  await openHousehold(page);
   await expect(page.getByLabel("Air purifier")).toHaveValue("none");
+  await closeHousehold(page);
   await page.getByRole("button", { name: "Apply and recompute" }).click();
+  await openHousehold(page);
   await expect(page.getByLabel("Air purifier")).toHaveValue("good");
 });
 
@@ -49,6 +56,7 @@ test("the interface switches to Hindi and sets the page language", async ({ page
 
 test("a community committee sees community actions", async ({ page }) => {
   await openPlan(page);
+  await openHousehold(page);
   await page.getByLabel("A housing society or community").check();
   await page.getByLabel("Usual way of travelling").selectOption("car");
   await page.getByLabel("Households in the community").fill("120");

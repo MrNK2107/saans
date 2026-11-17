@@ -1,6 +1,7 @@
 "use client";
 
 import type { Action, Group } from "@/core/actions";
+import { actionHour } from "@/core/bands";
 import { describeAction, impactChips } from "@/core/catalog";
 import type { Narrative } from "@/ai/contracts";
 import { useT } from "../useT";
@@ -33,7 +34,7 @@ export function ActionList({
     <section aria-labelledby="plan-title" className="actions">
       <h2 id="plan-title">{t("plan.title")}</h2>
       {narrative && (
-        <div className="card narrative">
+        <div className="narrative">
           <h3>{narrative.headline}</h3>
           <p>{narrative.summary}</p>
           <p className="hint">{t("plan.ai", { model: model ?? "AI" })}</p>
@@ -51,23 +52,29 @@ export function ActionList({
         return (
           <div key={group} className="group">
             <h3>{t(`plan.group.${group}`)}</h3>
-            <ul className="cards">
+            <ul className="timeline">
               {items.map((action) => {
                 const { title, body } = describeAction(action, lang);
                 const reason = reasons.get(action.id);
+                const hour = actionHour(action);
                 return (
-                  <li key={action.id} className="card action">
-                    <h4>{title}</h4>
-                    <p>{body}</p>
-                    {reason && <p className="why">{t("plan.why", { reason })}</p>}
-                    <ul className="chips" aria-label="Impact">
-                      {impactChips(action, lang).map((chip) => (
-                        <li key={chip} className="chip chip-impact">
-                          {chip}
-                        </li>
-                      ))}
-                      <li className="chip">{t(`plan.cost.${action.cost}`)}</li>
-                    </ul>
+                  <li key={action.id} className="action">
+                    <p className="action-time">
+                      {hour === null ? t("time.any") : t("time.at", { hour })}
+                    </p>
+                    <div className="action-body">
+                      <h4>{title}</h4>
+                      <p>{body}</p>
+                      {reason && <p className="why">{t("plan.why", { reason })}</p>}
+                      <ul className="chips" aria-label="Impact">
+                        {impactChips(action, lang).map((chip) => (
+                          <li key={chip} className="chip chip-impact">
+                            {chip}
+                          </li>
+                        ))}
+                        <li className="chip">{t(`plan.cost.${action.cost}`)}</li>
+                      </ul>
+                    </div>
                   </li>
                 );
               })}

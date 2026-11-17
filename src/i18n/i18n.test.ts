@@ -17,7 +17,14 @@ describe("dictionaries", () => {
   });
 
   it("never leave a Hindi string empty or identical to English by accident", () => {
-    const sameOk = new Set(["air.pm25", "air.aqi", "air.unit"]);
+    const sameOk = new Set([
+      "air.pm25",
+      "air.aqi",
+      "air.unit",
+      "band.aqi",
+      "time.at",
+      "today.verdict",
+    ]);
     for (const key of Object.keys(en) as (keyof typeof en)[]) {
       expect(hi[key].trim().length, key).toBeGreaterThan(0);
       if (!sameOk.has(key)) expect(hi[key], key).not.toBe(en[key]);

@@ -19,3 +19,15 @@ export async function openPlan(page: Page) {
     timeout: 20_000,
   });
 }
+
+/** Opens the household drawer from the Today page. */
+export async function openHousehold(page: Page) {
+  await page.getByRole("button", { name: "Edit your household" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+}
+
+/** Closes the household drawer again. */
+export async function closeHousehold(page: Page) {
+  await page.getByRole("button", { name: "Close" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+}

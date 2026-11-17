@@ -53,7 +53,7 @@ export function Assistant({ profile, onChange }: Props) {
   }
 
   return (
-    <section className="card assistant" aria-labelledby={`${uid}-title`}>
+    <section id="ask" className="assistant" aria-labelledby={`${uid}-title`}>
       <h2 id={`${uid}-title`}>{t("chat.title")}</h2>
       <p className="hint">{t("chat.hint")}</p>
 

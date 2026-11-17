@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectAccessible, openPlan } from "./helpers";
+import { expectAccessible, openHousehold, openPlan } from "./helpers";
 
 test.use({ reducedMotion: "reduce" });
 
@@ -24,6 +24,7 @@ test("plan page is accessible, with the table and the assistant open", async ({ 
 
 test("plan page is accessible in Hindi and in community mode", async ({ page }) => {
   await openPlan(page);
+  await openHousehold(page);
   await page.getByLabel("A housing society or community").check();
   await page.getByRole("button", { name: "Update my plan" }).click();
   await expect(page.getByRole("heading", { name: "Agree a no-burning pledge" })).toBeVisible();
@@ -35,6 +36,7 @@ test("plan page is accessible in Hindi and in community mode", async ({ page }) 
 
 test("form errors are announced and accessible", async ({ page }) => {
   await openPlan(page);
+  await openHousehold(page);
   for (const label of ["Children under 5", "Children 5 to 17", "Adults", "Adults 60 and over"]) {
     await page.getByLabel(label, { exact: true }).fill("0");
   }

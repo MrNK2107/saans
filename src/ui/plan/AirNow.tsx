@@ -31,7 +31,6 @@ function HourlyChart({ plan }: { plan: Plan }) {
               y={H - height}
               width={bar - 3}
               height={height}
-              rx={2}
               className={`bar cat-${h.category}${isWorst ? " bar-worst" : ""}${isBest ? " bar-best" : ""}`}
             />
           );
@@ -73,21 +72,19 @@ function HourlyChart({ plan }: { plan: Plan }) {
   );
 }
 
+/** The air itself: where the numbers come from, the official GRAP stage, and the hour-by-hour chart. */
 export function AirNow({ plan }: { plan: Plan }) {
   const { t, lang } = useT();
   return (
-    <section className="card air" aria-labelledby="air-title">
+    <section id="air" className="air" aria-labelledby="air-title">
       <h2 id="air-title">{t("air.title", { area: plan.locality })}</h2>
-      <div className={`aqi-badge cat-${plan.category}`}>
-        <p className="aqi-number" aria-label={`${t("air.aqi")} ${plan.meanAqi}`}>
-          {plan.meanAqi}
-        </p>
-        <p className="aqi-label">
-          <span className="sr-only">{t("air.aqi")}: </span>
-          {CATEGORY_LABEL[plan.category][lang]}
-        </p>
-      </div>
       <dl className="facts">
+        <div>
+          <dt>{t("air.aqi")}</dt>
+          <dd>
+            {plan.meanAqi} · {CATEGORY_LABEL[plan.category][lang]}
+          </dd>
+        </div>
         <div>
           <dt>{t("air.pm25")}</dt>
           <dd>
