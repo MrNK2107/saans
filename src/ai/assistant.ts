@@ -1,3 +1,5 @@
+import { z } from "zod";
+import type { Change } from "@/core/changes";
 import type { Plan } from "@/core/plan";
 import type { Profile } from "@/core/types";
 import {
@@ -9,10 +11,44 @@ import {
   type Turn,
 } from "./contracts";
 import { forModel } from "./json-schema";
-import { CONVERSE_SYSTEM, NARRATE_SYSTEM, converseContext, narratePrompt } from "./prompts";
+import { CONVERSE_SYSTEM, NARRATE_SYSTEM, converseContext, fence, narratePrompt } from "./prompts";
 import { TOOLS, parseCalls } from "./tools";
 
 const NARRATIVE_JSON = forModel(NarrativeSchema);
+const ReplySchema = z.object({ reply: z.string().trim().min(1).max(900) });
+const REPLY_JSON = forModel(ReplySchema);
+const DEFAULT_REPLY = "Here is what I would change.";
+
+/**
+ * Models often answer a "can you set this up?" question with a tool call and no words. This asks for
+ * the written answer separately, so the person always gets advice and not only a button.
+ */
+async function writeReply(
+  engine: Engine,
+  profile: Profile,
+  plan: Plan,
+  history: Turn[],
+  changes: Change[],
+): Promise<string> {
+  try {
+    const raw = await engine.json({
+      system: CONVERSE_SYSTEM,
+      prompt:
+        `${converseContext(profile, plan)}
+${fence("conversation", history)}
+` +
+        `You are proposing these changes, which the person will approve: ${JSON.stringify(changes)}. ` +
+        "Write the short reply that answers their question and says what the change would do. " +
+        "Present it as a suggestion they can approve, never as something already done.",
+      schema: REPLY_JSON,
+      temperature: 0.5,
+    });
+    const parsed = ReplySchema.safeParse(raw);
+    return parsed.success ? parsed.data.reply : DEFAULT_REPLY;
+  } catch {
+    return DEFAULT_REPLY;
+  }
+}
 
 /** Keeps the model's ordering but only for actions that exist in the computed plan, once each. */
 export function cleanNarrative(raw: Narrative, plan: Plan): Narrative {
@@ -52,7 +88,9 @@ export function createAssistant(engine: Engine): AiProvider {
         temperature: 0.5,
       });
       const changes = parseCalls(res.calls);
-      const reply = res.text.trim() || (changes.length ? "Here is what I would change." : "");
+      const spoken = res.text.trim();
+      const reply =
+        spoken || (changes.length ? await writeReply(engine, profile, plan, history, changes) : "");
       if (!reply)
         throw new AiUnavailable("The assistant had no answer. Please try asking another way.");
       return { reply, changes };

@@ -70,7 +70,7 @@ export function narratePrompt(profile: Profile, plan: Plan): string {
 }
 
 export const CONVERSE_SYSTEM = `${RULES}
-Answer the person's questions about their air, health precautions and routine, in the language they write in. When they want to change something about the household (commute, purifier, cooking fuel, hood, outdoor exercise, area), call the matching tool instead of just describing it; the person approves each change and the app recomputes the impact. Keep replies under 120 words. ${UNTRUSTED}`;
+Answer the person's questions about their air, health precautions and routine, in the language they write in. When they want to change something about the household (commute, purifier, cooking fuel, hood, outdoor exercise, area), call the matching tool as well as answering; the person approves each change and the app recomputes the impact. Always write a short written answer to the question itself, even when you call a tool, using the household's own circumstances and the numbers in <facts>. Keep replies under 120 words. ${UNTRUSTED}`;
 
 export function converseContext(profile: Profile, plan: Plan): string {
   return `${fence("household", householdFacts(profile))}\n${fence("facts", planFacts(plan))}`;

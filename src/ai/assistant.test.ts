@@ -96,16 +96,32 @@ describe("createAssistant", () => {
     expect(history[0]!.text).toContain("<household>");
   });
 
-  it("fills in a reply when the model only called a tool, and fails when it said nothing", async () => {
-    const onlyCall = createAssistant(
+  it("asks for the written answer when the model only called a tool", async () => {
+    const json = vi.fn().mockResolvedValue({ reply: "A purifier helps an asthmatic parent most." });
+    const ai = createAssistant(
       engine({
+        json,
         tools: vi.fn().mockResolvedValue({
           text: "",
           calls: [{ name: "set_range_hood", args: { value: true } }],
         }),
       }),
     );
-    expect((await onlyCall.converse(profile, plan, [])).reply).not.toBe("");
+    const out = await ai.converse(profile, plan, [{ role: "user", text: "help" }]);
+    expect(out.reply).toBe("A purifier helps an asthmatic parent most.");
+    expect(out.changes).toHaveLength(1);
+    expect(json.mock.calls[0]![0].prompt).toContain("<conversation>");
+  });
+
+  it("falls back to a plain sentence if the follow-up answer fails, and errors when there is nothing", async () => {
+    const calls = { text: "", calls: [{ name: "set_range_hood", args: { value: true } }] };
+    for (const json of [
+      vi.fn().mockRejectedValue(new Error("down")),
+      vi.fn().mockResolvedValue({ nope: 1 }),
+    ]) {
+      const ai = createAssistant(engine({ json, tools: vi.fn().mockResolvedValue(calls) }));
+      expect((await ai.converse(profile, plan, [])).reply).toBe("Here is what I would change.");
+    }
     const silent = createAssistant(
       engine({ tools: vi.fn().mockResolvedValue({ text: "", calls: [] }) }),
     );
