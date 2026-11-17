@@ -20,3 +20,6 @@ ui-debug.log
 .vercel
 .env*
 !.env.example
+
+.vercel
+.env*
